@@ -23,12 +23,17 @@ async def run(app):
         if value is None:
             continue
 
+        logger.info(f"[SCAN] {symbol} checked for RSI watchlist")
+
         if value < 30:
             new_state = "oversold"
         elif value > 70:
             new_state = "overbought"
         else:
             new_state = "normal"
+
+        if new_state != "normal":
+            logger.info(f"[SIGNAL] {symbol} RSI state={new_state} (RSI: {value})")
 
         for user_id in user_ids:
             key = (user_id, symbol)
@@ -40,6 +45,6 @@ async def run(app):
                     await app.bot.send_message(chat_id=user_id, text=rsi_alert(symbol, value, new_state))
                     mark_sent(user_id)
                     track("rsi_alert_sent", symbol=symbol, state=new_state, rsi=value, user_id=user_id)
-                    logger.info(f"RSI alarmı: {symbol} {new_state} (RSI: {value}) → kullanıcı {user_id}")
+                    logger.info(f"[SIGNAL] Signal sent to user {user_id}")
                 else:
                     logger.info(f"RSI cooldown: {symbol} → kullanıcı {user_id} atlandı")

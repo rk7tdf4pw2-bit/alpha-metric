@@ -31,12 +31,15 @@ async def run(app):
         if rsi is None:
             continue
 
+        logger.info(f"[SCAN] {symbol} checked for signal score")
+
         score, signals = signal_score.compute(rsi, funding)
         old_score = _last_scores.get(symbol, 0)
         _last_scores[symbol] = score
 
         if score >= SCORE_THRESHOLD and old_score < SCORE_THRESHOLD:
             slabel = signal_score.label(score)
+            logger.info(f"[SIGNAL] {symbol} signal triggered score={score} ({', '.join(signals)})")
             text = signal_alert(symbol, slabel, signals)
             markup = share_markup(app.bot.username)
             for user_id in user_ids:
@@ -44,4 +47,5 @@ async def run(app):
                     await app.bot.send_message(chat_id=user_id, text=text, reply_markup=markup)
                     mark_sent(user_id)
                     track("signal_score_alert_sent", symbol=symbol, score=score, user_id=user_id)
+                    logger.info(f"[SIGNAL] Signal sent to user {user_id}")
             logger.info(f"Signal alarm: {symbol} skor={score} ({', '.join(signals)})")

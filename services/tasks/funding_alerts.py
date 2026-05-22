@@ -19,6 +19,8 @@ async def run(app):
     if rate is None:
         return
 
+    logger.info("[SCAN] BTC funding checked")
+
     if rate > THRESHOLD_HIGH:
         new_state = "long_crowded"
     elif rate < THRESHOLD_LOW:
@@ -30,11 +32,14 @@ async def run(app):
         users = await get_premium_users()
         text = funding_alert(rate, new_state)
         markup = share_markup(app.bot.username)
+        sent = 0
         for user_id in users:
             if can_send(user_id):
                 await app.bot.send_message(chat_id=user_id, text=text, reply_markup=markup)
                 mark_sent(user_id)
                 track("funding_alert_sent", state=new_state, rate=f"{rate:.6f}", user_id=user_id)
-        logger.info(f"Funding alarmı: {new_state} (rate: {rate:.6f})")
+                logger.info(f"[SIGNAL] Signal sent to user {user_id}")
+                sent += 1
+        logger.info(f"[SIGNAL] BTC funding signal {new_state} sent to {sent}/{len(users)} premium users")
 
     _last_state = new_state

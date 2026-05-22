@@ -21,6 +21,8 @@ async def run(app):
     if price is None or rsi is None:
         return
 
+    logger.info("[SCAN] BTC daily pulse computed")
+
     users = await get_all_users()
     if not users:
         return
@@ -32,6 +34,7 @@ async def run(app):
             await app.bot.send_message(chat_id=user_id, text=text)
             mark_sent(user_id)
             sent += 1
+            logger.info(f"[SIGNAL] Daily pulse sent to user {user_id}")
 
     premium = await get_premium_users()
     watchlists = await get_all_watchlists()
