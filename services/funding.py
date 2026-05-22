@@ -1,21 +1,19 @@
 from utils.http import get as http_get
 from utils.logger import logger
+from utils import normalize_symbol
 
-BYBIT_TICKER_URL = "https://api.bybit.com/v5/market/tickers"
+BINANCE_FUNDING_URL = "https://fapi.binance.com/fapi/v1/premiumIndex"
 
 
 async def get_funding_rate(symbol: str = "BTC") -> float | None:
-    data = await http_get(BYBIT_TICKER_URL, params={
-        "category": "linear",
-        "symbol": f"{symbol.upper()}USDT",
-    })
-    if data is None or data.get("retCode") != 0:
-        logger.warning(f"get_funding_rate başarısız: symbol={symbol} yanıt={data}")
+    binance_symbol = normalize_symbol(symbol)
+    if binance_symbol is None:
+        logger.warning(f"get_funding_rate: geçersiz sembol atlandı, symbol={symbol}")
         return None
-    items = data.get("result", {}).get("list", [])
-    if not items:
+    data = await http_get(BINANCE_FUNDING_URL, params={"symbol": binance_symbol})
+    if data is None or "lastFundingRate" not in data:
+        logger.warning(f"[BINANCE] get_funding_rate başarısız: symbol={binance_symbol} yanıt={data}")
         return None
-    rate = items[0].get("fundingRate")
-    if rate is None:
-        return None
-    return float(rate)
+    rate = float(data["lastFundingRate"])
+    logger.info(f"[BINANCE] get_funding_rate OK: {binance_symbol} rate={rate:.6f}")
+    return rate

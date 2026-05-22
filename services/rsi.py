@@ -1,26 +1,29 @@
 from utils.http import get as http_get
 from utils.logger import logger
+from utils import normalize_symbol
 
-BYBIT_KLINE_URL = "https://api.bybit.com/v5/market/kline"
+BINANCE_KLINE_URL = "https://api.binance.com/api/v3/klines"
 
 
 async def get_rsi(symbol: str, period: int = 14) -> float | None:
-    data = await http_get(BYBIT_KLINE_URL, params={
-        "category": "spot",
-        "symbol": f"{symbol.upper()}USDT",
-        "interval": "60",
+    binance_symbol = normalize_symbol(symbol)
+    if binance_symbol is None:
+        logger.warning(f"get_rsi: geçersiz sembol atlandı, symbol={symbol}")
+        return None
+    data = await http_get(BINANCE_KLINE_URL, params={
+        "symbol": binance_symbol,
+        "interval": "1h",
         "limit": period + 1,
     })
-    if data is None or data.get("retCode") != 0:
-        logger.warning(f"get_rsi başarısız: symbol={symbol} yanıt={data}")
+    if data is None or not isinstance(data, list):
+        logger.warning(f"[BINANCE] get_rsi başarısız: symbol={binance_symbol} yanıt={data}")
         return None
-    candles = data.get("result", {}).get("list", [])
-    if len(candles) < period + 1:
-        logger.warning(f"get_rsi: yetersiz mum verisi, symbol={symbol} adet={len(candles)}")
+    if len(data) < period + 1:
+        logger.warning(f"[BINANCE] get_rsi: yetersiz mum verisi, symbol={binance_symbol} adet={len(data)}")
         return None
 
-    candles = list(reversed(candles))
-    closes = [float(c[4]) for c in candles]
+    # Binance klines artan sırada gelir; index 4 kapanış fiyatıdır
+    closes = [float(c[4]) for c in data]
     changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
 
     gains = [c for c in changes if c > 0]
@@ -33,4 +36,6 @@ async def get_rsi(symbol: str, period: int = 14) -> float | None:
         return 100.0
 
     rs = avg_gain / avg_loss
-    return round(100 - (100 / (1 + rs)), 1)
+    rsi = round(100 - (100 / (1 + rs)), 1)
+    logger.info(f"[BINANCE] get_rsi OK: {binance_symbol} RSI={rsi}")
+    return rsi

@@ -10,6 +10,9 @@ async def get(url: str, **kwargs) -> dict | list | None:
         try:
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                 response = await client.get(url, **kwargs)
+                if response.status_code >= 400:
+                    logger.warning(f"[BINANCE] HTTP {response.status_code}: url={url} yanıt={response.text[:200]}")
+                    return None
                 return response.json()
         except (httpx.ConnectError, httpx.TimeoutException) as e:
             if attempt == 0:
