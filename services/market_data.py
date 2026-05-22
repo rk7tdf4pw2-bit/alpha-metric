@@ -1,10 +1,19 @@
 from utils.http import get as http_get
+from utils.logger import logger
 
-BINANCE_URL = "https://api.binance.com/api/v3/ticker/price"
+BYBIT_TICKER_URL = "https://api.bybit.com/v5/market/tickers"
 
 
 async def get_price(symbol: str) -> str | None:
-    data = await http_get(BINANCE_URL, params={"symbol": f"{symbol.upper()}USDT"})
-    if data is None or "code" in data:
+    data = await http_get(BYBIT_TICKER_URL, params={
+        "category": "spot",
+        "symbol": f"{symbol.upper()}USDT",
+    })
+    if data is None or data.get("retCode") != 0:
+        logger.warning(f"get_price başarısız: symbol={symbol} yanıt={data}")
         return None
-    return f"${float(data['price']):,.2f}"
+    items = data.get("result", {}).get("list", [])
+    if not items:
+        logger.warning(f"get_price: boş liste döndü, symbol={symbol}")
+        return None
+    return f"${float(items[0]['lastPrice']):,.2f}"

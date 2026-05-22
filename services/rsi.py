@@ -1,18 +1,26 @@
 from utils.http import get as http_get
+from utils.logger import logger
 
-KLINES_URL = "https://api.binance.com/api/v3/klines"
+BYBIT_KLINE_URL = "https://api.bybit.com/v5/market/kline"
 
 
 async def get_rsi(symbol: str, period: int = 14) -> float | None:
-    data = await http_get(KLINES_URL, params={
+    data = await http_get(BYBIT_KLINE_URL, params={
+        "category": "spot",
         "symbol": f"{symbol.upper()}USDT",
-        "interval": "1h",
+        "interval": "60",
         "limit": period + 1,
     })
-    if data is None or isinstance(data, dict):
+    if data is None or data.get("retCode") != 0:
+        logger.warning(f"get_rsi başarısız: symbol={symbol} yanıt={data}")
+        return None
+    candles = data.get("result", {}).get("list", [])
+    if len(candles) < period + 1:
+        logger.warning(f"get_rsi: yetersiz mum verisi, symbol={symbol} adet={len(candles)}")
         return None
 
-    closes = [float(candle[4]) for candle in data]
+    candles = list(reversed(candles))
+    closes = [float(c[4]) for c in candles]
     changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
 
     gains = [c for c in changes if c > 0]
