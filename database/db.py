@@ -78,6 +78,37 @@ async def add_coin(user_id: int, username: str, symbol: str) -> bool:
         return cursor.rowcount > 0
 
 
+async def add_coins(user_id: int, username: str, symbols: list[str]) -> int:
+    """Add multiple symbols to a user's watchlist and return number of additions."""
+    if not symbols:
+        return 0
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)",
+            (user_id, username),
+        )
+        added_count = 0
+        for symbol in symbols:
+            cursor = await db.execute(
+                "INSERT OR IGNORE INTO watchlists (user_id, symbol) VALUES (?, ?)",
+                (user_id, symbol.upper()),
+            )
+            if cursor.rowcount > 0:
+                added_count += 1
+        await db.commit()
+        return added_count
+
+
+async def has_watchlist(user_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT 1 FROM watchlists WHERE user_id = ? LIMIT 1",
+            (user_id,),
+        )
+        return await cursor.fetchone() is not None
+
+
 async def get_coins(user_id: int) -> list[str]:
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(

@@ -12,3 +12,6 @@ if env_path.exists():
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
+# Starter watchlist configuration for onboarding
+STARTER_WATCHLIST = ["BTC", "ETH", "SOL"]
+
