@@ -10,6 +10,7 @@ from handlers.watchlist import addcoin, mycoins
 from handlers.alert import alert
 from handlers.rsi import rsi
 from handlers.admin import premium_on, premium_off
+from handlers.analyze import analyze
 from services.scheduler import check_watchlists
 from utils.logger import logger
 
@@ -39,6 +40,8 @@ def main():
     app.add_handler(CommandHandler("rsi", rsi))
     app.add_handler(CommandHandler("premium_on", premium_on))
     app.add_handler(CommandHandler("premium_off", premium_off))
+    app.add_handler(CommandHandler("analyze", analyze))
+    logger.info("[BOT] analyze handler registered")
 
     logger.info("🤖 Alpha Metric Bot starting... (polling mode)")
     try:

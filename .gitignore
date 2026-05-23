@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Reasoning archive — local only; mount a volume on Railway for persistence
+logs/*.jsonl
+logs/*.jsonl.*
