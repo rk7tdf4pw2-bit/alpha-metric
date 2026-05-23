@@ -10,10 +10,11 @@ REFLECTION_CYCLES = 60   # check reflection every 60 cycles (~1 hour); engine en
 
 
 async def check_watchlists(app):
+    logger.info("[MONITOR] Scheduler loop started — continuous signal monitoring active")
     cycle = 0
     while True:
         cycle += 1
-        logger.info("[SCAN] Running watchlist scan")
+        logger.info(f"[SCAN] Iteration {cycle} started")
 
         if cycle % HEARTBEAT_CYCLES == 0:
             logger.info("[HEARTBEAT] Scheduler alive")
@@ -44,4 +45,5 @@ async def check_watchlists(app):
             except Exception as exc:
                 logger.exception(f"[ERROR] reflection_task failed: {exc}")
 
+        logger.info(f"[SCAN] Iteration {cycle} completed")
         await asyncio.sleep(INTERVAL)

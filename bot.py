@@ -15,11 +15,28 @@ from services.scheduler import check_watchlists
 from utils.logger import logger
 
 
+async def _watch_scheduler(app):
+    """Crash-restart wrapper for the main scheduler.
+
+    Keeps signal monitoring alive indefinitely. Logs crashes to Railway.
+    Re-raises CancelledError so PTB can shut down cleanly.
+    """
+    while True:
+        try:
+            await check_watchlists(app)
+        except asyncio.CancelledError:
+            logger.info("[MONITOR] Scheduler cancelled — shutting down cleanly")
+            raise
+        except Exception as exc:
+            logger.exception(f"[MONITOR] Scheduler crashed: {exc}. Restarting in 30 seconds...")
+            await asyncio.sleep(30)
+
+
 async def on_startup(app):
     """Initialize database and start background tasks on bot startup."""
     await init_db()
-    app.create_task(check_watchlists(app))
-    logger.info("✓ Bot initialization complete - database ready, scheduler started")
+    app.create_task(_watch_scheduler(app))
+    logger.info("✓ Bot initialization complete - database ready, signal monitor started")
 
 
 def main():
