@@ -63,7 +63,7 @@ async def _scan_symbol(app, symbol: str, user_ids: list[int]) -> int:
 async def run(app):
     entries = await get_all_watchlists()
     if not entries:
-        return
+        return 0, 0
 
     premium = set(await get_premium_users())
 
@@ -73,7 +73,7 @@ async def run(app):
             symbol_users.setdefault(symbol, []).append(user_id)
 
     if not symbol_users:
-        return
+        return 0, 0
 
     symbols_scanned = 0
     total_alerts = 0
@@ -92,3 +92,4 @@ async def run(app):
         f"[SIGNAL] Scan complete — symbols_scanned={symbols_scanned} "
         f"total_alerts={total_alerts} premium_users={len(premium)}"
     )
+    return symbols_scanned, total_alerts

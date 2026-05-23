@@ -12,39 +12,15 @@ from handlers.alert import alert
 from handlers.rsi import rsi
 from handlers.admin import premium_on, premium_off
 from handlers.analyze import analyze
-from services.scheduler import check_watchlists
+from services.scheduler import schedule_monitoring
 from utils.logger import logger
-
-
-async def _watch_scheduler(app):
-    """Crash-restart wrapper for the main scheduler.
-
-    Keeps signal monitoring alive indefinitely. Logs full tracebacks to Railway.
-    Re-raises CancelledError so PTB can shut down cleanly.
-    """
-    logger.info("[MONITOR] Signal monitoring lifecycle started")
-    while True:
-        try:
-            await check_watchlists(app)
-        except asyncio.CancelledError:
-            logger.info("[MONITOR] Scheduler cancelled — shutting down cleanly")
-            raise
-        except Exception:
-            logger.error(
-                f"[MONITOR] Scheduler crashed — restarting in 30s:\n{traceback.format_exc()}"
-            )
-            try:
-                await asyncio.sleep(30)
-            except asyncio.CancelledError:
-                logger.info("[MONITOR] Cancelled during restart delay — shutting down cleanly")
-                raise
 
 
 async def on_startup(app):
     """Initialize database and start background tasks on bot startup."""
     await init_db()
-    app.create_task(_watch_scheduler(app))
-    logger.info("✓ Bot initialization complete - database ready, signal monitor started")
+    await schedule_monitoring(app)
+    logger.info("✓ Bot initialization complete - database ready, signal monitor scheduled")
 
 
 def main():
