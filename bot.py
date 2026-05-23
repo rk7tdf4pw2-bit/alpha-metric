@@ -1,5 +1,6 @@
 import asyncio
 import sys
+import traceback
 from telegram.ext import ApplicationBuilder, CommandHandler
 
 from config.settings import TOKEN
@@ -18,18 +19,25 @@ from utils.logger import logger
 async def _watch_scheduler(app):
     """Crash-restart wrapper for the main scheduler.
 
-    Keeps signal monitoring alive indefinitely. Logs crashes to Railway.
+    Keeps signal monitoring alive indefinitely. Logs full tracebacks to Railway.
     Re-raises CancelledError so PTB can shut down cleanly.
     """
+    logger.info("[MONITOR] Signal monitoring lifecycle started")
     while True:
         try:
             await check_watchlists(app)
         except asyncio.CancelledError:
             logger.info("[MONITOR] Scheduler cancelled — shutting down cleanly")
             raise
-        except Exception as exc:
-            logger.exception(f"[MONITOR] Scheduler crashed: {exc}. Restarting in 30 seconds...")
-            await asyncio.sleep(30)
+        except Exception:
+            logger.error(
+                f"[MONITOR] Scheduler crashed — restarting in 30s:\n{traceback.format_exc()}"
+            )
+            try:
+                await asyncio.sleep(30)
+            except asyncio.CancelledError:
+                logger.info("[MONITOR] Cancelled during restart delay — shutting down cleanly")
+                raise
 
 
 async def on_startup(app):
