@@ -36,15 +36,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
+from config.settings import LOGS_DIR
 from utils.http import get as http_get
 from utils.logger import logger
 
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-_ARCHIVE_DIR   = Path("logs")
+_ARCHIVE_DIR    = LOGS_DIR
 _REASONING_FILE = _ARCHIVE_DIR / "reasoning_archive.jsonl"
-_OUTCOME_FILE  = _ARCHIVE_DIR / "outcome_archive.jsonl"
+_OUTCOME_FILE   = _ARCHIVE_DIR / "outcome_archive.jsonl"
 
 BINANCE_KLINE_URL = "https://api.binance.com/api/v3/klines"
 

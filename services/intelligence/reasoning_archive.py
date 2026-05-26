@@ -31,12 +31,13 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from config.settings import LOGS_DIR
 from utils.logger import logger
 
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-ARCHIVE_DIR = Path("logs")
+ARCHIVE_DIR = LOGS_DIR
 ARCHIVE_FILE = ARCHIVE_DIR / "reasoning_archive.jsonl"
 MAX_SIZE_BYTES = 10 * 1024 * 1024   # 10 MB — ~6 000 records per file
 

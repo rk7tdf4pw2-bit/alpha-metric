@@ -68,10 +68,35 @@ bot.db is created in the working directory on Railway
 ```
 → This is normal; Railway keeps the file between restarts (as long as the service doesn't get recreated)
 
-### Persistent Storage (if needed)
-If you need persistent database across deployments:
-1. Railway Dashboard → "Data" section
-2. Attach a Volume to store `bot.db`
+### Persistent Storage (required for intelligence loop)
+
+The self-improving intelligence loop writes to `logs/` at runtime.
+Without a persistent volume, all reasoning/outcome/calibration history
+is lost on every deploy, disabling confidence calibration entirely.
+
+**Step A — Add Volume in Railway Dashboard:**
+1. Open your service in Railway Dashboard
+2. Click "+" → "Volume"  (or Settings → Volumes → Add Volume)
+3. Set **Mount Path** to `/app/logs`
+4. Set **Size** to `1 GB` (sufficient for ~60,000 records)
+5. Save and redeploy
+
+**Step B — Verify it works:**
+After deploy, run `/analyze BTC` in Telegram and check Railway logs for:
+```
+[ARCHIVE] BTCUSDT: kayıt eklendi balance=... confidence=...
+```
+Then redeploy again and check that the file still exists:
+```
+[OUTCOME] Başlangıç: N mevcut değerlendirme yüklendi
+```
+
+**Alternative — use a custom path:**
+If you mount the volume at a different path (e.g. `/data`), set:
+```
+LOGS_DIR=/data/logs
+```
+in Railway Variables. No code change needed.
 
 ## Redeployment
 

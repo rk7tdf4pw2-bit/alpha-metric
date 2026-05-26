@@ -20,6 +20,10 @@ REASONING_ENABLED = os.getenv("REASONING_ENABLED", "true").lower() == "true"
 MAX_REASONING_TOKENS = int(os.getenv("MAX_REASONING_TOKENS", "700"))
 REASONING_TIMEOUT = int(os.getenv("REASONING_TIMEOUT", "40"))  # seconds, Claude API call only
 
+# Archive storage — override via LOGS_DIR env var when a persistent volume is mounted
+# Railway: set mount path to /app/logs OR set LOGS_DIR=/data/logs with volume at /data
+LOGS_DIR = Path(os.getenv("LOGS_DIR", "logs"))
+
 # Starter watchlist configuration for onboarding
 STARTER_WATCHLIST = ["BTC", "ETH", "SOL"]
 

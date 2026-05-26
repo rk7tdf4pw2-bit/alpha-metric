@@ -44,15 +44,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
+from config.settings import LOGS_DIR
 from utils.logger import logger
 
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-_ARCHIVE_DIR      = Path("logs")
-_REASONING_FILE   = _ARCHIVE_DIR / "reasoning_archive.jsonl"
-_OUTCOME_FILE     = _ARCHIVE_DIR / "outcome_archive.jsonl"
-_REFLECTION_FILE  = _ARCHIVE_DIR / "reflection_archive.jsonl"
+_ARCHIVE_DIR     = LOGS_DIR
+_REASONING_FILE  = _ARCHIVE_DIR / "reasoning_archive.jsonl"
+_OUTCOME_FILE    = _ARCHIVE_DIR / "outcome_archive.jsonl"
+_REFLECTION_FILE = _ARCHIVE_DIR / "reflection_archive.jsonl"
 
 MIN_SAMPLE_SIZE              = 5    # minimum outcomes to draw a conclusion
 MIN_OUTCOMES_FOR_REFLECTION  = 10   # minimum total evaluable outcomes to produce a report

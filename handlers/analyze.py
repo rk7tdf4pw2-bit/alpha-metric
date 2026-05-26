@@ -28,6 +28,7 @@ from services.intelligence.contradiction_engine import analyze_context
 from services.intelligence.analysis_schema import build_analysis
 from services.intelligence.market_overview import get_market_overview
 from services.intelligence.reasoning import generate_reasoning
+from services.intelligence.rule_weight_engine import load_active_weights
 from templates.analysis_format import format_analysis
 from utils import normalize_symbol
 from utils.logger import logger
@@ -60,9 +61,10 @@ async def _run_pipeline(binance_symbol: str):
     market_overview = await get_market_overview()
     logger.info(f"[ANALYZE] {binance_symbol}: [2/5] OK — overview={'var' if market_overview else 'yok'}")
 
-    # Step 3: Contradiction engine (deterministic, no I/O)
+    # Step 3: Contradiction engine (weighted when historical data available)
     logger.info(f"[ANALYZE] {binance_symbol}: [3/5] Contradiction engine çalıştırılıyor")
-    contradiction = analyze_context(asset_ctx)
+    weights = load_active_weights()
+    contradiction = analyze_context(asset_ctx, weights=weights)
     logger.info(
         f"[ANALYZE] {binance_symbol}: [3/5] OK — "
         f"balance={contradiction['overall_context_balance']} "

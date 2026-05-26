@@ -22,15 +22,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
+from config.settings import LOGS_DIR
 from services.intelligence.reflection_engine import ReflectionReport
 from utils.logger import logger
 
 
 # ── Archive configuration ──────────────────────────────────────────────────────
 
-_ARCHIVE_DIR = Path("logs")
+_ARCHIVE_DIR      = LOGS_DIR
 _CALIBRATION_FILE = _ARCHIVE_DIR / "calibration_archive.jsonl"
-_REFLECTION_FILE = _ARCHIVE_DIR / "reflection_archive.jsonl"
+_REFLECTION_FILE  = _ARCHIVE_DIR / "reflection_archive.jsonl"
 
 # ── Module-level cache (1 saatlik TTL) ────────────────────────────────────────
 
